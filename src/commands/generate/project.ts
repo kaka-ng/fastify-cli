@@ -1,7 +1,7 @@
 import { Command, Flags } from '@oclif/core'
 import { compile } from 'ejs'
 import { access, mkdir, readFile, stat, writeFile } from 'fs/promises'
-import { prompt, QuestionCollection } from 'inquirer'
+import { prompt } from 'inquirer'
 import { basename, dirname, join, resolve } from 'path'
 
 export default class Project extends Command {
@@ -20,29 +20,37 @@ export default class Project extends Command {
     help: Flags.help()
   }
 
+  shouldOverwrite = false
+
   async run (): Promise<void> {
     const { args, flags } = await this.parse(Project)
 
     // validate
     if (flags.language !== undefined) this.corceLanguage(flags.language)
 
-    const questions: QuestionCollection = [
+    const answer: any = {}
+
+    Object.assign(answer, await prompt([
       { type: 'input', name: 'name', message: 'What is your project name?', validate: this.questionNameValidate },
       { type: 'input', name: 'location', message: 'Where do you want to place your project?', default: this.questionLocationDefault },
-      { type: 'confirm', name: 'overwrite', message: 'The folder already exist. Do you want to overwrite?', default: false, when: this.questionOverwriteWhen, askAnswered: true },
+      { type: 'confirm', name: 'overwrite', message: 'The folder already exist. Do you want to overwrite?', default: false, when: this.questionOverwriteWhen, askAnswered: true }
+    ], {
+      name: args.name,
+      location: flags.location,
+      overwrite: flags.overwrite
+    }))
+
+    if (this.shouldOverwrite) this.questionOverwriteValidate(answer.overwrite)
+
+    Object.assign(answer, await prompt([
       { type: 'list', name: 'language', message: 'Which language will you use?', default: 'JavaScript', choices: ['JavaScript', 'TypeScript'] },
       { type: 'list', name: 'lint', message: 'Which linter would you like to use?', default: this.questionLintDefault, choices: this.questionLintChoices },
       { type: 'list', name: 'test', message: 'Which test framework would you like to use?', default: 'tap', choices: ['tap'] }
-    ]
-
-    const answer = await prompt(questions, {
-      name: args.name,
-      location: flags.location,
-      overwrite: flags.overwrite,
+    ], {
       language: flags.language,
       lint: flags.lint,
       test: flags.test
-    })
+    }))
 
     const fileList = await this.computeFileList(answer)
     const files = await this.prepareFiles(fileList, answer)
@@ -61,7 +69,14 @@ export default class Project extends Command {
   }
 
   questionOverwriteWhen = async (answer: any): Promise<boolean> => {
-    return !(await this.validateProjectLocation(answer.location))
+    this.shouldOverwrite = !(await this.validateProjectLocation(answer.location))
+    return this.shouldOverwrite
+  }
+
+  questionOverwriteValidate = (input: boolean): true | undefined => {
+    if (input) return true
+    this.log('Terminated because location cannot be overwrite.')
+    this.exit(0)
   }
 
   questionLintDefault =(answer: any): string => {
