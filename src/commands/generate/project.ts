@@ -1,8 +1,8 @@
 import { Command, Flags } from '@oclif/core'
 import { compile } from 'ejs'
-import { access, readFile, stat } from 'fs/promises'
+import { access, mkdir, readFile, stat, writeFile } from 'fs/promises'
 import { prompt, QuestionCollection } from 'inquirer'
-import { join, resolve } from 'path'
+import { basename, dirname, join, resolve } from 'path'
 
 export default class Project extends Command {
   static description = 'Generate fastify project'
@@ -46,8 +46,7 @@ export default class Project extends Command {
 
     const fileList = await this.computeFileList(answer)
     const files = await this.prepareFiles(fileList, answer)
-
-    console.log(files)
+    await this.writeFiles(files, answer)
   }
 
   questionNameValidate = (input: string): true | string => {
@@ -123,8 +122,25 @@ export default class Project extends Command {
     // we do not add .ejs in here
     // we should find the file if .ejs exist first and then compile to the destination
     const files: string[] = [
-      'package.json'
+      'package.json',
+      '.vscode/settings.json',
+      'README.md',
+      '__gitignore'
     ]
+
+    if (answer.language === 'JavaScript') {
+      files.push('app.js')
+      files.push('plugins/README.md')
+      files.push('plugins/sensible.js')
+      files.push('plugins/support.js')
+      files.push('routes/README.md')
+      files.push('routes/root.js')
+      files.push('routes/example/index.js')
+      files.push('test/helper.js')
+      files.push('test/plugins/support.test.js')
+      files.push('test/routes/root.test.js')
+      files.push('test/routes/example.test.js')
+    }
 
     return files
   }
@@ -150,15 +166,16 @@ export default class Project extends Command {
   }
 
   async prepareFiles (files: string[], answer: any): Promise<{ [path: string]: string }> {
-    console.log(resolve('package.json'))
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const pkg = require(resolve('package.json'))
     answer.version = pkg.version
     answer.dependencies = pkg.dependencies
     answer.devDependencies = pkg.devDependencies
     const o: { [path: string]: string } = {}
-    for (const file of files) {
+    for (let file of files) {
       const { template, content } = await this.resolveFile(file)
+      const dir = dirname(file)
+      file = `${dir}/${basename(file).replace('__', '.')}`
       if (template) {
         const render = compile(content, { async: true })
         o[file] = await render(answer)
@@ -167,5 +184,14 @@ export default class Project extends Command {
       }
     }
     return o
+  }
+
+  async writeFiles (files: { [path: string]: string }, answer: any): Promise<void> {
+    for (const [path, content] of Object.entries(files)) {
+      const fullpath = resolve(join(answer.location, path))
+      await mkdir(dirname(fullpath), { recursive: true })
+      await writeFile(fullpath, content)
+      this.log(`write file ${path} to ${fullpath}`)
+    }
   }
 }
