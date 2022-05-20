@@ -1,0 +1,43 @@
+{
+  "name": "<%= name %>",
+  "main": "<%= language === 'JavaScript' ? 'app.js' : 'dist/app.js' %>",
+  "scripts": {
+    <%_ if(language === "JavaScript") { _%>
+      <%_ if(lint === "standard") { _%>
+    "lint": "standard",
+      <%_ } _%>
+      <%_ if(lint.includes("eslint")) { _%>
+    "lint": "eslint .",
+      <%_ } _%>
+    "test": "tap \"test/**/*.test.js\"",
+    "start": "fastify start -l info app.js",
+    "dev": "fastify start -w -l info -P app.js"
+    <%_ } _%>
+    <%_ if(language === "TypeScript") { _%>
+      <%_ if(lint === "standard") { _%>
+    "lint": "ts-standard",
+      <%_ } _%>
+      <%_ if(lint.includes("eslint")) { _%>
+    "lint": "eslint . --ext .ts",
+      <%_ } _%>
+    "test": "tap \"test/**/*.test.js\"",
+    "start": "fastify start -l info app.js",
+    "dev": "fastify start -w -l info -P app.js"
+    <%_ } _%>
+  },
+  "dependencies": {
+    "@fastify/autoload": "<%= dependencies["@fastify/autoload"] %>",
+    "@fastify/sensible": "<%= dependencies["@fastify/sensible"] %>",
+    "fastify": "<%= dependencies["fastify"] %>",
+    "fastify-cli": "^<%= version %>",
+    "fastify-plugin": "<%= dependencies["fastify-plugin"] %>"
+  },
+  "devDependencies": {
+    "@types/node": "<%= devDependencies["@types/node"] %>",
+    "@types/tap": "<%= devDependencies["@types/tap"] %>",
+    "tap": "<%= devDependencies["tap"] %>",
+    "ts-node": "<%= devDependencies["ts-node"] %>",
+    "ts-standard": "^11.0.0",
+    "typescript": "<%= devDependencies["typescript"] %>",
+  }
+}
