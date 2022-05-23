@@ -94,11 +94,11 @@ export function computeDevDependencies (answer: any, pkg: any): { [key: string]:
 
     // ts-standard
     if (String(answer.lint).includes('ts-standard')) {
-      // eslint + ts-standard
       dependencies.eslint = pkg.devDependencies.eslint
-      // eslint + ts-standard
       dependencies['eslint-plugin-node'] = pkg.devDependencies['eslint-plugin-node']
       dependencies['eslint-config-standard-with-typescript'] = pkg.devDependencies['eslint-config-standard-with-typescript']
+      // require >=3.3.1 <4.5.0
+      dependencies.typescript = '~4.4.0'
     } else
     // standard
     if (String(answer.lint).includes('standard')) {
