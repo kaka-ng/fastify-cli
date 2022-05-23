@@ -13,7 +13,7 @@
     "/oclif.manifest.json"
   ],
   "scripts": {
-    "build": "shx rm -rf dist && tsc -p tsconfig.build.json",
+    "build": "shx rm -rf dist && tsc -p tsconfig.json",
     "lint": "eslint . --ext .ts --config .eslintrc",
     "lint:fix": "npm run lint --fix",
     "prepack": "npm run build && oclif manifest && oclif readme",
