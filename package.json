@@ -13,7 +13,7 @@
     "/oclif.manifest.json"
   ],
   "scripts": {
-    "build": "shx rm -rf dist && tsc",
+    "build": "shx rm -rf dist && tsc -p tsconfig.build.json",
     "lint": "eslint . --ext .ts --config .eslintrc",
     "lint:fix": "npm run lint --fix",
     "prepack": "npm run build && oclif manifest && oclif readme",
@@ -64,7 +64,7 @@
     "@typescript-eslint/eslint-plugin": "^4.0.1",
     "eslint": "^7.12.1",
     "eslint-config-standard-with-typescript": "^21.0.1",
-    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^5.0.0",
     "oclif": "^3.0.1",
@@ -91,6 +91,16 @@
     "extends": "standard-with-typescript",
     "parserOptions": {
       "project": "./tsconfig.json"
-    }
+    },
+    "overrides": [
+      {
+        "files": [
+          "templates/**/*.test.ts"
+        ],
+        "rules": {
+          "@typescript-eslint/no-floating-promises": "off"
+        }
+      }
+    ]
   }
 }

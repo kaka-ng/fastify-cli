@@ -3,6 +3,7 @@ import { compile } from 'ejs'
 import { access, mkdir, readFile, stat, writeFile } from 'fs/promises'
 import { prompt } from 'inquirer'
 import { basename, dirname, join, resolve } from 'path'
+import { computePackageJSON } from '../../utils/package'
 
 export default class Project extends Command {
   static description = 'Generate fastify project'
@@ -33,7 +34,7 @@ export default class Project extends Command {
     Object.assign(answer, await prompt([
       { type: 'input', name: 'name', message: 'What is your project name?', validate: this.questionNameValidate },
       { type: 'input', name: 'location', message: 'Where do you want to place your project?', default: this.questionLocationDefault },
-      { type: 'confirm', name: 'overwrite', message: 'The folder already exist. Do you want to overwrite?', default: false, when: this.questionOverwriteWhen, askAnswered: true }
+      { type: 'confirm', name: 'overwrite', message: 'The folder already exist. Do you want to overwrite?', default: flags.overwrite ?? false, when: this.questionOverwriteWhen, askAnswered: true }
     ], {
       name: args.name,
       location: flags.location,
@@ -137,7 +138,6 @@ export default class Project extends Command {
     // we do not add .ejs in here
     // we should find the file if .ejs exist first and then compile to the destination
     const files: string[] = [
-      'package.json',
       '.vscode/settings.json',
       'README.md',
       '__gitignore'
@@ -155,6 +155,22 @@ export default class Project extends Command {
       files.push('test/plugins/support.test.js')
       files.push('test/routes/root.test.js')
       files.push('test/routes/example.test.js')
+    }
+
+    if (answer.language === 'TypeScript') {
+      files.push('tsconfig.json')
+      files.push('tsconfig.build.json')
+      files.push('src/app.ts')
+      files.push('src/plugins/README.md')
+      files.push('src/plugins/sensible.ts')
+      files.push('src/plugins/support.ts')
+      files.push('src/routes/README.md')
+      files.push('src/routes/root.ts')
+      files.push('src/routes/example/index.ts')
+      files.push('test/helper.ts')
+      files.push('test/plugins/support.test.ts')
+      files.push('test/routes/root.test.ts')
+      files.push('test/routes/example.test.ts')
     }
 
     return files
@@ -181,12 +197,8 @@ export default class Project extends Command {
   }
 
   async prepareFiles (files: string[], answer: any): Promise<{ [path: string]: string }> {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const pkg = require(resolve('package.json'))
-    answer.version = pkg.version
-    answer.dependencies = pkg.dependencies
-    answer.devDependencies = pkg.devDependencies
     const o: { [path: string]: string } = {}
+    o['package.json'] = computePackageJSON(answer)
     for (let file of files) {
       const { template, content } = await this.resolveFile(file)
       const dir = dirname(file)

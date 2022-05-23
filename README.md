@@ -11,7 +11,7 @@ $ npm install -g fastify-cli
 $ fastify COMMAND
 running command...
 $ fastify (--version)
-fastify-cli/0.0.0 linux-x64 node-v18.2.0
+fastify-cli/3.1.0 linux-x64 node-v18.2.0
 $ fastify --help [COMMAND]
 USAGE
   $ fastify COMMAND
@@ -36,7 +36,7 @@ DESCRIPTION
   Generate fastify project
 ```
 
-_See code: [dist/commands/generate/index.ts](https://github.com/fastify/fastify-cli/blob/v0.0.0/dist/commands/generate/index.ts)_
+_See code: [dist/commands/generate/index.ts](https://github.com/fastify/fastify-cli/blob/v3.1.0/dist/commands/generate/index.ts)_
 
 ## `fastify generate project [NAME]`
 
