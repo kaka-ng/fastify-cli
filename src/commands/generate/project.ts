@@ -1,6 +1,7 @@
 import { Command, Flags } from '@oclif/core'
+import { execSync } from 'child_process'
 import { compile } from 'ejs'
-import { access, mkdir, readFile, stat, writeFile } from 'fs/promises'
+import { access, mkdir, readFile, rm, stat, writeFile } from 'fs/promises'
 import { prompt } from 'inquirer'
 import { basename, dirname, join, resolve } from 'path'
 import { computePackageJSON } from '../../utils/package'
@@ -56,6 +57,8 @@ export default class Project extends Command {
     const fileList = await this.computeFileList(answer)
     const files = await this.prepareFiles(fileList, answer)
     await this.writeFiles(files, answer)
+    await this.npmInstall(answer)
+    this.log(`project "${answer.name as string}" initialized in "${answer.location as string}"`)
   }
 
   questionNameValidate = (input: string): true | string => {
@@ -214,11 +217,29 @@ export default class Project extends Command {
   }
 
   async writeFiles (files: { [path: string]: string }, answer: any): Promise<void> {
+    if (this.shouldOverwrite) {
+      this.log(`remove folder "${answer.location as string}"`)
+      await rm(resolve(answer.location as string), { recursive: true, force: true })
+    }
     for (const [path, content] of Object.entries(files)) {
-      const fullpath = resolve(join(answer.location, path))
+      const realpath = join(answer.location, path)
+      const fullpath = resolve(realpath)
       await mkdir(dirname(fullpath), { recursive: true })
       await writeFile(fullpath, content)
-      this.log(`write file ${path} to ${fullpath}`)
+      this.log(`write file "${path}" to "${realpath}"`)
+    }
+  }
+
+  async npmInstall (answer: any): Promise<void> {
+    this.log('run "npm install"')
+    const result: any = await prompt([
+      { type: 'confirm', name: 'npm', message: 'Do you want to run "npm install"?', default: true }
+    ])
+    if (result.npm === true) {
+      execSync('npm install', {
+        cwd: resolve(answer.location),
+        stdio: 'inherit'
+      })
     }
   }
 }
