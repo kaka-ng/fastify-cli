@@ -20,23 +20,8 @@ USAGE
 <!-- usagestop -->
 # Commands
 <!-- commands -->
-* [`fastify generate`](#fastify-generate)
 * [`fastify generate project [NAME]`](#fastify-generate-project-name)
 * [`fastify help [COMMAND]`](#fastify-help-command)
-
-## `fastify generate`
-
-Generate fastify project
-
-```
-USAGE
-  $ fastify generate
-
-DESCRIPTION
-  Generate fastify project
-```
-
-_See code: [dist/commands/generate/index.ts](https://github.com/fastify/fastify-cli/blob/v3.1.0/dist/commands/generate/index.ts)_
 
 ## `fastify generate project [NAME]`
 
