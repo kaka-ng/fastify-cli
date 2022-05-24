@@ -1,6 +1,7 @@
 import { mkdir, rm } from 'fs/promises'
 import { join, resolve } from 'path'
 import t from 'tap'
+import { INGORE_GENERATE_TEST, INGORE_NPM_INSTALL } from '../../env'
 import { ENTER, KEY_DOWN, runCommand, runRawCommand } from '../../run-command'
 
 t.test('terminate on folder exist and not overwrite', async (t) => {
@@ -71,7 +72,7 @@ t.test('JavaScript + Standard', async (t) => {
     await rm(location, { recursive: true, force: true })
   })
 
-  t.plan(8)
+  t.plan(INGORE_NPM_INSTALL ? 8 : 9)
   const { stdout, stdin } = runCommand(['generate', 'project'])
 
   await stdout.until(/What is your project name?/)
@@ -91,13 +92,15 @@ t.test('JavaScript + Standard', async (t) => {
   stdin.press(ENTER)
   await stdout.until(/Do you want to run "npm install"?/)
   t.pass('ask project npm install')
-  stdin.writeLn('N')
-  // TODO: it take too long for Github Actions to run npm install
-  // stdin.press(ENTER)
-  // await stdout.until(/initialized in/)
-  // t.pass('project node_modules installed')
+  if (INGORE_NPM_INSTALL) {
+    stdin.writeLn('N')
+  } else {
+    stdin.press(ENTER)
+    await stdout.until(/initialized in/)
+    t.pass('project node_modules installed')
+  }
 
-  t.test('Lint', { skip: true }, async (t) => {
+  t.test('Lint', { skip: INGORE_NPM_INSTALL }, async (t) => {
     t.plan(2)
     const { stdout, stderr, exited } = runRawCommand(['npm', 'run', 'lint'], { cwd: location })
     await exited
@@ -105,9 +108,7 @@ t.test('JavaScript + Standard', async (t) => {
     t.matchSnapshot(stdout.lines)
   })
 
-  // TODO: it should ensure the generated project coverage
-  // currently, nyc is throwing in this apporach
-  t.test('Test', { skip: true }, async (t) => {
+  t.test('Test', { skip: INGORE_GENERATE_TEST }, async (t) => {
     t.plan(2)
     const { stdout, stderr, exited } = runRawCommand(['npm', 'run', 'test'], { cwd: location })
     await exited
@@ -124,7 +125,7 @@ t.test('TypeScript + ESLint + TSStandard', async (t) => {
     await rm(location, { recursive: true, force: true })
   })
 
-  t.plan(8)
+  t.plan(INGORE_NPM_INSTALL ? 8 : 9)
   const { stdout, stdin } = runCommand(['generate', 'project'])
 
   await stdout.until(/What is your project name?/)
@@ -147,13 +148,15 @@ t.test('TypeScript + ESLint + TSStandard', async (t) => {
   stdin.press(ENTER)
   await stdout.until(/Do you want to run "npm install"?/)
   t.pass('ask project npm install')
-  stdin.writeLn('N')
-  // TODO: it take too long for Github Actions to run npm install
-  // stdin.press(ENTER)
-  // await stdout.until(/initialized in/)
-  // t.pass('project node_modules installed')
+  if (INGORE_NPM_INSTALL) {
+    stdin.writeLn('N')
+  } else {
+    stdin.press(ENTER)
+    await stdout.until(/initialized in/)
+    t.pass('project node_modules installed')
+  }
 
-  t.test('Lint', { skip: true }, async (t) => {
+  t.test('Lint', { skip: INGORE_NPM_INSTALL }, async (t) => {
     t.plan(2)
     const { stdout, stderr, exited } = runRawCommand(['npm', 'run', 'lint'], { cwd: location })
     await exited
@@ -161,9 +164,7 @@ t.test('TypeScript + ESLint + TSStandard', async (t) => {
     t.matchSnapshot(stdout.lines)
   })
 
-  // TODO: it should ensure the generated project coverage
-  // currently, nyc is throwing in this apporach
-  t.test('Test', { skip: true }, async (t) => {
+  t.test('Test', { skip: INGORE_GENERATE_TEST }, async (t) => {
     t.plan(2)
     const { stdout, stderr, exited } = runRawCommand(['npm', 'run', 'test'], { cwd: location })
     await exited
