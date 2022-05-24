@@ -18,8 +18,9 @@
     "lint:fix": "npm run lint --fix",
     "prepack": "npm run build && oclif manifest && oclif readme",
     "postpack": "shx rm -f oclif.manifest.json",
-    "unit": "tap \"test/**/*.test.ts\" --ts",
-    "test": ""
+    "unit": "tap \"test/**/*.test.ts\"",
+    "test": "npm run lint && npm run unit",
+    "snap": "TAP_SNAPSHOT=1 && npm run unit"
   },
   "keywords": [
     "fastify",

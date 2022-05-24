@@ -1,4 +1,4 @@
-import { ChildProcessWithoutNullStreams, spawn } from 'child_process'
+import { ChildProcessWithoutNullStreams, spawn, SpawnOptionsWithoutStdio } from 'child_process'
 import { Writable } from 'stream'
 import { sleep } from './sleep'
 
@@ -57,20 +57,24 @@ interface CustomStdIn extends Writable {
   writeLn: (line: string) => Promise<void>
 }
 
-export function runCommand (args: string[] = []): {
+export function runRawCommand (args: string[] = [], options: SpawnOptionsWithoutStdio = {}): {
   stdout: CustomWritable
   stderr: CustomWritable
   stdin: CustomStdIn
   child: ChildProcessWithoutNullStreams
+  exited: Promise<void>
 } {
-  const child = spawn('node', ['bin/dev', ...args])
+  if (args.length < 1) throw new Error('args expected to be length greater than zero.')
+  const child = spawn(args.shift() as string, args, options)
   const stderr = new CustomWritable()
   const stdout = new CustomWritable()
   const stdin = child.stdin as CustomStdIn
   child.stdout.pipe(stdout)
   child.stderr.pipe(stderr)
+  let isExit = false
 
   child.once('exit', () => {
+    isExit = true
     stdout.end()
     stderr.end()
   })
@@ -89,6 +93,24 @@ export function runCommand (args: string[] = []): {
     stdout,
     stdin,
     stderr,
-    child
+    child,
+    exited: new Promise((resolve) => {
+      const interval = setInterval(() => {
+        if (isExit) {
+          clearInterval(interval)
+          resolve()
+        }
+      }, 100)
+    })
   }
+}
+
+export function runCommand (args: string[] = [], options: SpawnOptionsWithoutStdio = {}): {
+  stdout: CustomWritable
+  stderr: CustomWritable
+  stdin: CustomStdIn
+  child: ChildProcessWithoutNullStreams
+  exited: Promise<void>
+} {
+  return runRawCommand(['node', 'bin/dev', ...args], options)
 }
