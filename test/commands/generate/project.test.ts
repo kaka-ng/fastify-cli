@@ -11,8 +11,9 @@ t.test('JavaScript + Standard', async (t) => {
     await rm(location, { recursive: true, force: true })
   })
 
-  t.plan(9)
+  t.plan(8)
   const { stdout, stdin } = runCommand(['generate', 'project'])
+
   await stdout.until(/What is your project name?/)
   stdin.writeLn(name)
   t.pass('project name')
@@ -29,13 +30,14 @@ t.test('JavaScript + Standard', async (t) => {
   stdin.press(ENTER)
   t.pass('project test framework')
   await stdout.until(/Do you want to run "npm install"?/)
-  stdin.press(ENTER)
-  // stdin.writeLn('N')
+  stdin.writeLn('N')
   t.pass('project npm install')
-  await stdout.until(/initialized in/)
-  t.pass('project node_modules installed')
+  // TODO: it take too long for Github Actions to run npm install
+  // stdin.press(ENTER)
+  // await stdout.until(/initialized in/)
+  // t.pass('project node_modules installed')
 
-  t.test('Lint', async (t) => {
+  t.test('Lint', { skip: true }, async (t) => {
     t.plan(2)
     const { stdout, stderr, exited } = runRawCommand(['npm', 'run', 'lint'], { cwd: location })
     await exited
