@@ -74,16 +74,23 @@ Start fastify instance
 
 ```
 USAGE
-  $ fastify start [ENTRY] [-r <value>] [-a <value>] [-p <value>] [--help]
+  $ fastify start [ENTRY] [-r <value>] [-p <value>] [-a <value>] [--debug-port <value> -d] [--debug-address
+    <value> ] [--prefix <value>] [-P] [--help]
 
 ARGUMENTS
   ENTRY  Entry point of fastify instance.
 
 FLAGS
-  -a, --address=<value>     [default: localhost]
-  -p, --port=<value>        [default: 3000]
-  -r, --require=<value>...
+  -P, --pretty              [default: false] Use "pino-pretty" for log display. It require to install the module
+                            seperately.
+  -a, --address=<value>     [default: localhost] Address listen on. It can be either address or socket.
+  -d, --debug               [default: false] Enable debug mode.
+  -p, --port=<value>        [default: 3000] Port listen on.
+  -r, --require=<value>...  Preload Modules, for example "-r ts-node/register".
+  --debug-address=<value>   Inspector host, by default it will be either "localhost" or "0.0.0.0" in docker.
+  --debug-port=<value>      [default: 9320] Inspector port.
   --help                    Show CLI help.
+  --prefix=<value>          [default: ""] Entry file prefix.
 
 DESCRIPTION
   Start fastify instance

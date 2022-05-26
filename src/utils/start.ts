@@ -18,10 +18,15 @@ function cacheFastify (entry: string): void {
 }
 
 export interface StartOption {
+  prefix: string
   entry: string
   require: string[]
   port: number
   address: string
+  debug: boolean
+  debugPort: number
+  debugAddress: string
+  pretty: boolean
 }
 
 /**
@@ -30,8 +35,6 @@ export interface StartOption {
  * @returns
  */
 export async function start (options: StartOption): Promise<FastifyInstance> {
-  console.log(options)
-
   // we require the files before any actions
   try {
     for (const file of options.require) {
@@ -48,23 +51,43 @@ export async function start (options: StartOption): Promise<FastifyInstance> {
     stop(error)
   }
 
+  // we update fastify reference
   cacheFastify(options.entry)
 
   let entryPlugin = null
+  const fastifyOptions: any = { logger: { level: 'fatal' } }
 
   try {
-    entryPlugin = await _requireEntryFile(options.entry)
+    const plugin = await _requireEntryFile(options.entry)
+    entryPlugin = plugin.plugin
+    Object.assign(fastifyOptions, plugin.options)
   } catch (error: any) {
     stop(error)
   }
 
-  const fastify = Fastify({ logger: true })
+  if (options.pretty) {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const PinoPretty = require('pino-pretty')
+    fastifyOptions.logger.stream = PinoPretty({
+      colorize: true,
+      sync: true
+    })
+  }
 
-  await fastify.register(entryPlugin)
+  // debug
+  if (options.debug) {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const inspector = require('inspector')
+    inspector.open(options.debugPort, options.debugAddress)
+  }
+
+  const fastify = Fastify(fastifyOptions)
+
+  await fastify.register(entryPlugin, { prefix: options.prefix })
 
   await fastify.listen(options.port)
 
-  return await fastify
+  return fastify as any
 }
 
 /**

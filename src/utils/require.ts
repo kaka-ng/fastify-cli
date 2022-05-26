@@ -1,4 +1,5 @@
 import type _FastifyModule from 'fastify'
+import { FastifyServerOptions } from 'fastify'
 import { existsSync } from 'fs'
 import { extname, resolve } from 'path'
 import resolveFrom from 'resolve-from'
@@ -44,7 +45,7 @@ export function _requireFastify (entry: string): FastifyModule {
  * @param {string} entry entry file
  * @returns {function} plugin module
  */
-export async function _requireEntryFile (entry: string): Promise<any> {
+export async function _requireEntryFile (entry: string): Promise<{ plugin: any, options: FastifyServerOptions }> {
   const path = resolve(process.cwd(), entry)
   if (!existsSync(path)) {
     throw Error(`${path} doesn't exist within ${process.cwd()}`)
@@ -54,17 +55,26 @@ export async function _requireEntryFile (entry: string): Promise<any> {
   const scriptType = computeScriptType(path, defScriptType)
 
   let plugin
+  let options
   if (scriptType === 'module') {
-    plugin = (await _import(pathToFileURL(path).href)).default
+    plugin = await _import(pathToFileURL(path).href)
   } else {
     plugin = require(path)
   }
+  // we check if custom option provided
+  if (typeof plugin.options === 'object') options = plugin.options
+
+  // we check if it use default export
+  if (typeof plugin.default === 'function') plugin = plugin.default
+
+  // we check it again, if custom option provided through default export
+  if (typeof plugin.options === 'object') options = plugin.options
 
   if (isInvalidAsyncPlugin(plugin)) {
     throw new Error('Async/Await plugin function should contain 2 arguments. Refer to documentation for more information.')
   }
 
-  return plugin
+  return { plugin, options }
 }
 
 /**
