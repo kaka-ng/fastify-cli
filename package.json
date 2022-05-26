@@ -47,12 +47,12 @@
     "node": ">= 12"
   },
   "dependencies": {
-    "@fastify/autoload": "^4.0.0",
-    "@fastify/sensible": "^4.0.0",
+    "@fastify/autoload": "^5.0.0",
+    "@fastify/sensible": "^5.0.0",
     "@oclif/core": "^1.8.2",
     "@oclif/plugin-help": "^5.1.12",
     "ejs": "^3.1.8",
-    "fastify": "^3.29.0",
+    "fastify": "^4.0.0-rc.2",
     "fastify-plugin": "^3.0.0",
     "inquirer": "^8.2.4",
     "is-docker": "^3.0.0",

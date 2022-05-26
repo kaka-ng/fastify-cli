@@ -85,7 +85,7 @@ export async function start (options: StartOption): Promise<FastifyInstance> {
 
   await fastify.register(entryPlugin, { prefix: options.prefix })
 
-  await fastify.listen(options.port)
+  await fastify.listen({ port: options.port, host: options.address })
 
   return fastify as any
 }
