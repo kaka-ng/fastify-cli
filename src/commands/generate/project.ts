@@ -1,9 +1,10 @@
-import { Command, Flags } from '@oclif/core'
+import { Flags } from '@oclif/core'
 import { execSync } from 'child_process'
 import { compile } from 'ejs'
 import { access, mkdir, readFile, rm, stat, writeFile } from 'fs/promises'
 import { prompt } from 'inquirer'
 import { basename, dirname, join, resolve } from 'path'
+import { Command } from '../../utils/command/command'
 import { computePackageJSON } from '../../utils/package'
 
 export default class Project extends Command {

@@ -22,6 +22,7 @@ USAGE
 <!-- commands -->
 * [`fastify generate project [NAME]`](#fastify-generate-project-name)
 * [`fastify help [COMMAND]`](#fastify-help-command)
+* [`fastify start ENTRY`](#fastify-start-entry)
 
 ## `fastify generate project [NAME]`
 
@@ -66,4 +67,27 @@ DESCRIPTION
 ```
 
 _See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v5.1.12/src/commands/help.ts)_
+
+## `fastify start ENTRY`
+
+Start fastify instance
+
+```
+USAGE
+  $ fastify start [ENTRY] [-r <value>] [-a <value>] [-p <value>] [--help]
+
+ARGUMENTS
+  ENTRY  Entry point of fastify instance.
+
+FLAGS
+  -a, --address=<value>     [default: localhost]
+  -p, --port=<value>        [default: 3000]
+  -r, --require=<value>...
+  --help                    Show CLI help.
+
+DESCRIPTION
+  Start fastify instance
+```
+
+_See code: [dist/commands/start.ts](https://github.com/fastify/fastify-cli/blob/v3.1.0/dist/commands/start.ts)_
 <!-- commandsstop -->
