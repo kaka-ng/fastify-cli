@@ -57,7 +57,8 @@
     "inquirer": "^8.2.4",
     "pkg-up": "^4.0.0",
     "resolve-from": "^5.0.0",
-    "semver": "^7.3.7"
+    "semver": "^7.3.7",
+    "tslib": "^2.4.0"
   },
   "devDependencies": {
     "@types/ejs": "^3.1.1",
