@@ -15,13 +15,13 @@ export default class Start extends Command {
 
   static flags = {
     require: Flags.string({ char: 'r', description: 'Preload Modules, for example "-r ts-node/register".', multiple: true }),
-    port: Flags.integer({ char: 'p', description: 'Port listen on.', default: 3000 }),
-    address: Flags.string({ char: 'a', description: 'Address listen on. It can be either address or socket.', default: 'localhost' }),
+    port: Flags.integer({ char: 'p', description: '[default: 3000] Port listen on.' }),
+    address: Flags.string({ char: 'a', description: '[default: localhost] Address listen on. It can be either address or socket.' }),
     debug: Flags.boolean({ char: 'd', description: '[default: false] Enable debug mode.' }),
     'debug-port': Flags.integer({ description: '[default: 9320] Inspector port.', dependsOn: ['debug'] }),
     'debug-address': Flags.string({ description: 'Inspector host, by default it will be either "localhost" or "0.0.0.0" in docker.', dependsOn: ['debug'] }),
     prefix: Flags.string({ description: '[default: ""] Entry file prefix.' }),
-    pretty: Flags.boolean({ char: 'P', description: '[default: false] Use "pino-pretty" for log display. It require to install the module seperately.' }),
+    'pretty-logs': Flags.boolean({ char: 'P', description: '[default: false] Use "pino-pretty" for log display. It require to install the module seperately.' }),
     help: Flags.help()
   }
 
@@ -39,7 +39,7 @@ export default class Start extends Command {
     options.debug = await this.normalizeDebug(flags.debug)
     options.debugPort = await this.normalizeDebugPort(flags['debug-port'])
     options.debugAddress = await this.normalizeDebugAddress(flags['debug-address'])
-    options.pretty = await this.normalizePretty(flags.pretty)
+    options.pretty = await this.normalizePretty(flags['pretty-logs'])
 
     await start(options as StartOption)
   }
@@ -69,14 +69,13 @@ export default class Start extends Command {
     return array
   }
 
-  normalizePort (port: number): number {
-    // when port is default
-    // env take precedence
-    return port === 3000 ? process.env.PORT as any ?? port : port
+  normalizePort (port?: number): number {
+    return process.env.PORT as any ?? port ?? 3000
   }
 
-  normalizeAddress (address: string): string {
-    return address
+  async normalizeAddress (address?: string): Promise<string> {
+    const { default: isDocker } = await _import('is-docker')
+    return address ?? (isDocker() === true ? '0.0.0.0' : 'localhost')
   }
 
   normalizeDebug (debug?: boolean): boolean {
