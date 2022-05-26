@@ -1,5 +1,5 @@
 import { FastifyInstance } from 'fastify'
-import { FastifyModule, _require, _requireEntryFile, _requireFastify } from './import'
+import { FastifyModule, _require, _requireEntryFile, _requireFastify } from './require'
 
 // @ts-expect-error
 let Fastify: FastifyModule = null

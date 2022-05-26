@@ -21,7 +21,6 @@ export default class Start extends Command {
 
   async run (): Promise<void> {
     const { args, flags } = await this.parse(Start)
-    console.log(args, flags)
 
     // we normalize the options before start
     const options: Partial<StartOption> = {}

@@ -5,7 +5,7 @@ import { access, mkdir, readFile, rm, stat, writeFile } from 'fs/promises'
 import { prompt } from 'inquirer'
 import { basename, dirname, join, resolve } from 'path'
 import { Command } from '../../utils/command/command'
-import { computePackageJSON } from '../../utils/package'
+import { computePackageJSON } from '../../utils/package-json'
 
 export default class Project extends Command {
   static description = 'Generate fastify project'
