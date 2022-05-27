@@ -75,13 +75,13 @@ Start fastify instance
 ```
 USAGE
   $ fastify start [ENTRY] [-r <value>] [-p <value>] [-a <value>] [--debug-port <value> -d] [--debug-address
-    <value> ] [--prefix <value>] [-P] [--help]
+    <value> ] [--prefix <value>] [-P] [--watch] [--watch-ignore <value>] [--watch-verbose] [--help]
 
 ARGUMENTS
   ENTRY  Entry point of fastify instance.
 
 FLAGS
-  -P, --pretty              [default: false] Use "pino-pretty" for log display. It require to install the module
+  -P, --pretty-logs         [default: false] Use "pino-pretty" for log display. It require to install the module
                             seperately.
   -a, --address=<value>     [default: localhost] Address listen on. It can be either address or socket.
   -d, --debug               [default: false] Enable debug mode.
@@ -91,6 +91,9 @@ FLAGS
   --debug-port=<value>      [default: 9320] Inspector port.
   --help                    Show CLI help.
   --prefix=<value>          [default: ""] Entry file prefix.
+  --watch
+  --watch-ignore=<value>
+  --watch-verbose
 
 DESCRIPTION
   Start fastify instance

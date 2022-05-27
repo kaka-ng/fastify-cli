@@ -1,4 +1,8 @@
 import { FastifyInstance } from 'fastify'
+import { constants } from 'fs'
+import { access } from 'fs/promises'
+import { resolve } from 'path'
+import { _import } from './import'
 import { FastifyModule, _require, _requireEntryFile, _requireFastify } from './require'
 
 // @ts-expect-error
@@ -27,6 +31,9 @@ export interface StartOption {
   debugPort: number
   debugAddress: string
   pretty: boolean
+  watch: boolean
+  watchIgnorePattern: string
+  watchVerbose: boolean
 }
 
 /**
@@ -34,7 +41,9 @@ export interface StartOption {
  * @param {object} options options
  * @returns
  */
-export async function start (options: StartOption): Promise<FastifyInstance> {
+export async function start (_o?: Partial<StartOption>): Promise<FastifyInstance> {
+  const options = await normalizeStartOptions(_o)
+
   // we require the files before any actions
   try {
     for (const file of options.require) {
@@ -104,4 +113,86 @@ export function stop (message?: Error | string): void {
     return process.exit(1)
   }
   process.exit()
+}
+
+// we check options here
+export async function normalizeStartOptions (options?: Partial<StartOption>): Promise<StartOption> {
+  options ??= {}
+  options.prefix = normalizePrefix(options.prefix)
+  options.entry = await normalizeEntry(options.entry)
+  options.require = normalizeRequire(options.require)
+  options.port = normalizePort(options.port)
+  options.address = await normalizeAddress(options.address)
+  options.debug = normalizeDebug(options.debug)
+  options.debugPort = normalizeDebugPort(options.debugPort)
+  options.debugAddress = await normalizeDebugAddress(options.debugAddress)
+  options.pretty = normalizePretty(options.pretty)
+  options.watch = normalizeWatch(options.watch)
+  options.watchIgnorePattern = normalizeWatchIgnorePattern(options.watchIgnorePattern)
+  options.watchVerbose = normalizeWatchVerbose(options.watchVerbose)
+  return options as StartOption
+}
+
+export function normalizePrefix (prefix?: string): string {
+  return prefix ?? ''
+}
+
+export async function normalizeEntry (entry?: string): Promise<string> {
+  try {
+    if (typeof entry !== 'string') throw Error(`entry file expected to be a string, but recieved "${typeof entry}"`)
+    await access(resolve(process.cwd(), entry), constants.F_OK | constants.R_OK)
+    return entry
+  } catch {
+    throw Error(`entry file "${entry as string}" is not exist in ${process.cwd()} or do not have have permission to read.`)
+  }
+}
+
+export function normalizeRequire (requires?: string | string[]): string[] {
+  const array: string[] = []
+  if (requires === undefined) return array
+  requires = typeof requires === 'string' ? [requires] : requires
+
+  for (const p of requires) {
+    if (p.trim() !== '') array.push(p.trim())
+  }
+
+  return array
+}
+
+export function normalizePort (port?: number): number {
+  return process.env.PORT as any ?? port ?? 3000
+}
+
+export async function normalizeAddress (address?: string): Promise<string> {
+  const { default: isDocker } = await _import('is-docker')
+  return address ?? (isDocker() === true ? '0.0.0.0' : 'localhost')
+}
+
+export function normalizeDebug (debug?: boolean): boolean {
+  return debug ?? false
+}
+
+export function normalizeDebugPort (debugPort?: number): number {
+  return debugPort ?? 9320
+}
+
+export async function normalizeDebugAddress (debugAddress?: string): Promise<string> {
+  const { default: isDocker } = await _import('is-docker')
+  return debugAddress ?? (isDocker() === true ? '0.0.0.0' : 'localhost')
+}
+
+export function normalizePretty (pretty?: boolean): boolean {
+  return pretty ?? false
+}
+
+export function normalizeWatch (watch?: boolean): boolean {
+  return watch ?? false
+}
+
+export function normalizeWatchIgnorePattern (watchIgnorePattern?: string): string {
+  return watchIgnorePattern ?? 'node_modules .git'
+}
+
+export function normalizeWatchVerbose (watchVerbose?: boolean): boolean {
+  return watchVerbose ?? false
 }

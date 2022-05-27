@@ -112,5 +112,5 @@ export function runCommand (args: string[] = [], options: SpawnOptionsWithoutStd
   child: ChildProcessWithoutNullStreams
   exited: Promise<void>
 } {
-  return runRawCommand(['node', 'bin/dev', ...args], options)
+  return runRawCommand(['node', 'bin/run', ...args], options)
 }

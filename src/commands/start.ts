@@ -1,10 +1,7 @@
 import { Flags } from '@oclif/core'
-import { constants } from 'fs'
-import { access } from 'fs/promises'
-import { resolve } from 'path'
 import { Command } from '../utils/command/command'
-import { _import } from '../utils/import'
 import { start, StartOption } from '../utils/start'
+import { watch } from '../utils/watch/watch'
 
 export default class Start extends Command {
   static description = 'Start fastify instance'
@@ -22,80 +19,35 @@ export default class Start extends Command {
     'debug-address': Flags.string({ description: 'Inspector host, by default it will be either "localhost" or "0.0.0.0" in docker.', dependsOn: ['debug'] }),
     prefix: Flags.string({ description: '[default: ""] Entry file prefix.' }),
     'pretty-logs': Flags.boolean({ char: 'P', description: '[default: false] Use "pino-pretty" for log display. It require to install the module seperately.' }),
+    watch: Flags.boolean(),
+    'watch-ignore': Flags.string(),
+    'watch-verbose': Flags.boolean(),
     help: Flags.help()
   }
 
   async run (): Promise<void> {
     const { args, flags } = await this.parse(Start)
-    console.log(args, flags)
 
     // we normalize the options before start
-    const options: Partial<StartOption> = {}
-    options.prefix = await this.normalizeEntry(args.entry as string)
-    options.entry = await this.normalizeEntry(args.entry as string)
-    options.require = await this.normalizeRequire(flags.require)
-    options.port = await this.normalizePort(flags.port)
-    options.address = await this.normalizeAddress(flags.address)
-    options.debug = await this.normalizeDebug(flags.debug)
-    options.debugPort = await this.normalizeDebugPort(flags['debug-port'])
-    options.debugAddress = await this.normalizeDebugAddress(flags['debug-address'])
-    options.pretty = await this.normalizePretty(flags['pretty-logs'])
-
-    await start(options as StartOption)
-  }
-
-  normalizePrefix (prefix?: string): string {
-    return prefix ?? ''
-  }
-
-  async normalizeEntry (entry: string): Promise<string> {
-    try {
-      await access(resolve(process.cwd(), entry), constants.F_OK | constants.R_OK)
-      return entry
-    } catch {
-      throw Error(`entry file "${entry}" is not exist in ${process.cwd()} or do not have have permission to read.`)
-    }
-  }
-
-  async normalizeRequire (requires?: string | string[]): Promise<string[]> {
-    const array: string[] = []
-    if (requires === undefined) return array
-    requires = typeof requires === 'string' ? [requires] : requires
-
-    for (const p of requires) {
-      if (p.trim() !== '') array.push(p.trim())
+    const options: Partial<StartOption> = {
+      prefix: flags.prefix,
+      entry: args.entry,
+      require: flags.require,
+      port: flags.port,
+      address: flags.address,
+      debug: flags.debug,
+      debugPort: flags['debug-port'],
+      debugAddress: flags['debug-address'],
+      pretty: flags['pretty-logs'],
+      watch: flags.watch,
+      watchIgnorePattern: flags['watch-ignore'],
+      watchVerbose: flags['watch-verbose']
     }
 
-    return array
-  }
-
-  normalizePort (port?: number): number {
-    return process.env.PORT as any ?? port ?? 3000
-  }
-
-  async normalizeAddress (address?: string): Promise<string> {
-    const { default: isDocker } = await _import('is-docker')
-    return address ?? (isDocker() === true ? '0.0.0.0' : 'localhost')
-  }
-
-  normalizeDebug (debug?: boolean): boolean {
-    return debug ?? false
-  }
-
-  normalizeDebugPort (debugPort?: number): number {
-    return debugPort ?? 9320
-  }
-
-  async normalizeDebugAddress (debugAddress?: string): Promise<string> {
-    const { default: isDocker } = await _import('is-docker')
-    return debugAddress ?? (isDocker() === true ? '0.0.0.0' : 'localhost')
-  }
-
-  normalizePretty (pretty?: boolean): boolean {
-    return pretty ?? false
-  }
-
-  // start fastify instance
-  static async start (options?: Partial<StartOption>): Promise<void> {
+    if (options.watch === true) {
+      await watch(options)
+    } else {
+      await start(options)
+    }
   }
 }
