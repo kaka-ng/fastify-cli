@@ -1,6 +1,6 @@
 // This file actually address the issue from
 // https://github.com/oclif/oclif/issues/190
-import { FlagOutput, Input, OutputArgs, OutputFlags, ParserInput, ParserOutput } from '@oclif/core/lib/interfaces'
+import { Input, OutputArgs, OutputFlags, ParserInput, ParserOutput } from '@oclif/core/lib/interfaces'
 import * as args from '@oclif/core/lib/parser/args'
 import Deps from '@oclif/core/lib/parser/deps'
 import * as flags from '@oclif/core/lib/parser/flags'
@@ -130,7 +130,7 @@ export class Parser<T extends ParserInput, TFlags extends OutputFlags<T['flags']
 const m = Deps()
   .add('validate', () => require('@oclif/core/lib/parser/validate').validate)
 
-export async function parse<TFlags extends FlagOutput, GFlags extends FlagOutput, TArgs extends { [name: string]: string }> (argv: string[], options: Input<TFlags, GFlags>): Promise<ParserOutput<TFlags, GFlags, TArgs>> {
+export async function parse<TFlags, GFlags, TArgs extends { [name: string]: string }> (argv: string[], options: Input<TFlags, GFlags>): Promise<ParserOutput<TFlags, GFlags, TArgs>> {
   const input = {
     argv,
     context: options.context,
