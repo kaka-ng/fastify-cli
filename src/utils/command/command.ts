@@ -4,6 +4,7 @@ import { Command as RawCommand, Interfaces } from '@oclif/core'
 import * as Parser from './parser'
 
 export abstract class Command extends RawCommand {
+  // @ts-expect-error
   protected async parse<F, A extends { [name: string]: any }>(options?: Interfaces.Input<F>, argv = this.argv): Promise<Interfaces.ParserOutput<F, A>> {
     if (options == null) options = this.constructor as any
     const opts = { context: this, ...options }
