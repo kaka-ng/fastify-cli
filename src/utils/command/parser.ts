@@ -130,7 +130,7 @@ export class Parser<T extends ParserInput, TFlags extends OutputFlags<T['flags']
 const m = Deps()
   .add('validate', () => require('@oclif/core/lib/parser/validate').validate)
 
-export async function parse<TFlags, TArgs extends { [name: string]: string }> (argv: string[], options: Input<TFlags>): Promise<ParserOutput<TFlags, TArgs>> {
+export async function parse<TFlags, GFlags, TArgs extends { [name: string]: string }> (argv: string[], options: Input<TFlags, GFlags>): Promise<ParserOutput<TFlags, GFlags, TArgs>> {
   const input = {
     argv,
     context: options.context,
@@ -145,5 +145,5 @@ export async function parse<TFlags, TArgs extends { [name: string]: string }> (a
   const parser = new Parser(input)
   const output = await parser.parse()
   m.validate({ input, output })
-  return output as ParserOutput<TFlags, TArgs>
+  return output as ParserOutput<TFlags, GFlags, TArgs>
 }
